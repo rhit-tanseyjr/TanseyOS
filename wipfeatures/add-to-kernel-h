@@ -1,0 +1,20 @@
+#pragma once
+
+#include <stdarg.h>
+
+struct sbiret {
+    long error;
+    long value;
+};
+
+typedef unsigned int uint32_t;
+
+// Function declarations
+void printf(const char *fmt, ...);
+void putchar(char ch);
+struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4,
+                       long arg5, long fid, long eid);
+
+// Trap handling
+void kernel_trap(void);
+void handle_trap(struct trap_frame *frame);

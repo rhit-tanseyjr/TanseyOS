@@ -1,0 +1,24 @@
+void kernel_main(void) {
+    printf("\n\nHello %s\n", "World!");
+    
+    // Set up trap handler
+    // stvec = address of trap handler, mode 0 (direct)
+    uint32_t trap_addr = (uint32_t)kernel_trap;
+    __asm__ __volatile__("csrw stvec, %0" :: "r"(trap_addr));
+    
+    // Enable supervisor interrupts in sstatus (SIE bit)
+    __asm__ __volatile__("csrsi sstatus, 0x2");
+    
+    // Enable timer interrupts in sie register (bit 5)
+    __asm__ __volatile__("csrsi sie, 0x20");
+    
+    // Set first timer interrupt (10ms from now)
+    sbi_call(10000000 / 100, 0, 0, 0, 0, 0, 0, 0x54494D45);
+    
+    printf("Interrupts enabled! Waiting for timer...\n");
+    
+    // Idle loop - interrupts will wake us up
+    for (;;) {
+        __asm__ __volatile__("wfi");  // Wait for interrupt
+    }
+}
