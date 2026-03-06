@@ -12,6 +12,7 @@ prompt:
 						printf("commandline is too long :(\n");
 						goto prompt;
 				}
+
 				else if (ch == '\r') {
 					printf("\n");
 					cmdline[i] = '\0';
@@ -22,6 +23,9 @@ prompt:
 		}
 
 				if(strcmp(cmdline, "hello") == 0) printf("Hello world from shell!\n");
+				else if (strcmp(cmdline, "exit") == 0) 
+					exit();
+				// syscalls go here
 				else printf("unknown command: %s\n", cmdline);
 			}
 

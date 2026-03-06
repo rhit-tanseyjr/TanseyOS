@@ -6,6 +6,7 @@
 #define PAGE_X (1 << 3)
 #define PAGE_U (1 << 4)
 #define SYS_PUTCHAR 1
+#define PROC_EXITED 2
 #define USER_BASE 0x1000000
 #define VIRTIO_BLK_PADDR  0x10001000
 #define PAGE_SIZE 4096
