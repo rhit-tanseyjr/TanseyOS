@@ -1,7 +1,7 @@
 You're not supposed to be here!
 
 
-
+TODO List
 
 1. Interrupt Handling
 
@@ -14,24 +14,15 @@ You're not supposed to be here!
 5. Hardware Interaction
 
 6. Minimal TCP/IP Stack
-
 7. Watchdog Timer
-
 8. Task Management
-
 9. File System
-
 10. Bootloader
-
-11. 13. System Monitoring
-
+11. System Monitoring
 CPU usage tracking
 Memory usage statistics
 Task execution profiling
 Stack usage monitoring
 
 12. Logging System
-
 13. Minimize context switch overhead
-
-14. 
