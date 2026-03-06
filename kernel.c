@@ -58,7 +58,7 @@ void delay(void){
         __asm__ __volatile__("nop");
 }
 
-void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_T flags){
+void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags){
    if(!is_aligned(vaddr, PAGE_SIZE))
         PANIC("unaligned vaddr %x", vaddr);
     
@@ -74,7 +74,7 @@ void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_T flags){
 
     uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
     uint32_t *table0 = (uint32_t *) ((table1[vpn1] >> 10) * PAGE_SIZE);
-    table0[vpn0] = ((paddr \ PAGE_SIZE) << 10) | flags | PAGE_V;
+    table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
 }
 
 
@@ -125,6 +125,13 @@ void countdown_process(void) {
         switch_context(&proc_b->sp, &proc_a->sp);
     }
 }
+
+void swaws(void) {
+  printf("the end is never the end is never the end is never the end is never");
+  delay();
+  //switch_context(
+ }
+
 
 
 
