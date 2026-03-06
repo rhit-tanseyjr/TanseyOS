@@ -231,6 +231,11 @@ void putchar(char ch) {
     sbi_call(ch, 0, 0, 0, 0, 0, 0, 1 /* Console Putchar */);
 }
 
+long getchar(void) {
+		struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
+		return ret.error;
+}
+
 void kernel_main(void) {
     memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
     //WRITE_CSR(stvec, (uint32_t) kernel_entry);
@@ -289,6 +294,16 @@ void handle_trap(struct trap_frame *f) {
 
 void handle_syscall(struct trap_frame *f){
 	switch (f->a3) {
+		case SYS_GETCHAR:
+			while (1) {
+				long ch = getchar();
+				if (ch >= 0) {
+					f->a0 = ch;
+					break;
+				}
+				yield();
+			}
+			break;
 		case SYS_PUTCHAR:
 			putchar(f->a0);
 			break;

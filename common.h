@@ -1,5 +1,5 @@
 #pragma once
- 
+#define SYS_GETCHAR 2 
 
 typedef int bool;
 typedef unsigned char uint8_t;
