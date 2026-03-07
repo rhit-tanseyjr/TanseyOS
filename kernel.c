@@ -48,11 +48,7 @@ void virtio_blk_init(void){
 
 	blk_req_paddr = alloc_pages(align_up(sizeof(*blk_req), PAGE_SIZE / PAGE_SIZE);
 	blk_req = (struct virtio_blk_req *) blk_req_paddr;
-
-
 }
-
-
 
 
 
@@ -66,12 +62,6 @@ __attribute__((naked)) void user_entry(void) {
           [sstatus] "r" (SSTATUS_SPIE)
     );
 }
-
-/*void main(void) {
-	*((volatile int *) 0x80200000) = 0x1234;
-	printf("Hello World from shell!\n");
-}
-*/
 
 struct process *create_process(const void *image, size_t image_size) {
     struct process *proc = NULL;
@@ -344,6 +334,43 @@ struct virtio_virtq *virtq_init(unsigned index){
 	virtio_reg_write32(VIRTIO_REG_QUEUE_NUM, VIRTQ_ENTRY_NUM); // define queue size
 	virtio_reg_write32(VIRTIO_REG_QUEUE_PFN, virtq_paddr / PAGE_SIZE); // write the phys page frame num
 	return vq;
+
+}
+
+// Notify device of a new request
+void virtq_kick(struct virtio_virtq *vq, int desc_index){
+	vq->avail.ring[vq->avail.index % VIRTQ_ENTRY_NUM] = desc_index;
+	vq->avail.index++;
+	__sync_synchronize();
+	virtio_reg_write32(VIRTIO_REG_QUEUE_NOTIFY, vq->queue_index);
+	vq->last_used_index++;
+}
+
+bool virtq_is_busy(struct virtio_virtq *vq){
+	return vq->last_used_index != *vq->used_index;
+}
+
+void read_write_disk(void *buf, unsigned sector, int is_write){
+	if(sector >= blk_capacity / SECTOR_SIZE) {
+		printf("virtio: tried to read / write sector=%d, but the capacity is %d\n",
+				sector, blk_capacity / SECTOR_SIZE);
+		return;
+	}
+//rest of read/write implementation
+//construct request
+//
+//construct virtq descriptors
+//
+//notify the device of a req
+//
+//wait until device is finished with proc
+//
+//if non zero return, die
+//
+//copy data into buffer
+//
+
+
 
 }
 
