@@ -19,6 +19,43 @@ struct process procs[PROCS_MAX];
 struct process *proc_a;
 struct process *proc_b;
 
+//virtio structs
+
+struct virtio_virtq *blk_request_vq;
+struct virtio_blk_req *blk_req;
+paddr_t blk_req_paddr;
+uint64_t blk_capacity;
+
+void virtio_blk_init(void){
+	if (virtio_reg_read32(VIRTIO_REG_MAGIC) != 0x74726976) PANIC("virtio: invalid magic value");
+
+	if(virtio_reg_read32(VIRTIO_REG_VERSION) !=1) PANIC("virtio: invalid version");
+
+	if(virtio_reg_read32(VIRTIO_REG_DEVICE_ID) != VIRTIO_DEVICE_BLK) PANIC("virtio: invalid device id");
+
+	virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, 0);
+	virtio_reg_fetch_and_or32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_ACK);
+	virtio_reg_fetch_and_or32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_DRIVER);
+
+	virtio_reg_write32(VIRTIO_REG_PAGE_SIZE, PAGE_SIZE);
+
+	blk_request_vq = virtq_init(0);
+
+	virtio_reg_write32(VIRTIO_REG_DEVICE_STATUS, VIRTIO_STATUS_DRIVER_OK);
+	
+	blk_capacity = virtio_reg_read64(VIRTIO_REG_DEVICE_CONFIG + 0) * SECTOR_SIZE;
+	printf("virtio-blk: capacity is %d bytes \n", (int)blk_capacity);
+
+	blk_req_paddr = alloc_pages(align_up(sizeof(*blk_req), PAGE_SIZE / PAGE_SIZE);
+	blk_req = (struct virtio_blk_req *) blk_req_paddr;
+
+
+}
+
+
+
+
+
 __attribute__((naked)) void user_entry(void) {
     __asm__ __volatile__(
         "csrw sepc, %[sepc]        \n"
@@ -264,6 +301,9 @@ void kernel_main(void) {
  		printf("\n\n");
 
 		WRITE_CSR(stvec, (uint32_t) kernel_entry);
+
+		virtio_blk_init();
+
 		idle_proc = create_process(NULL, 0);
 		
 		idle_proc->pid = 0;
@@ -291,6 +331,19 @@ void kernel_main(void) {
    // printf("alloc_pages test: paddr1=%x\n", paddr1);
 
    // PANIC("booted");
+
+}
+
+struct virtio_virtq *virtq_init(unsigned index){
+	paddr_t virtq_paddr = alloc_pages(align_up(sizeof(struct virtio_virtq), PAGE_SIZE) / PAGE_SIZE);
+	struct virtio_virtq *vq = (struct virtio_virtq *) virtq_paddr;
+	vq->queue_index = index;
+	vq->used_index = (volatile uint16_t *) &vq->used.index;
+
+	virtio_reg_write32(VIRTIO_REG_QUEUE_SEL, index);// SELECT queue
+	virtio_reg_write32(VIRTIO_REG_QUEUE_NUM, VIRTQ_ENTRY_NUM); // define queue size
+	virtio_reg_write32(VIRTIO_REG_QUEUE_PFN, virtq_paddr / PAGE_SIZE); // write the phys page frame num
+	return vq;
 
 }
 
