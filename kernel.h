@@ -68,7 +68,22 @@ struct virtq_used { // used ring
 //
 // blk request
 
+struct virtio_virtq { // virtqueue struct
+	struct virtq_desc descs[VIRTQ_ENTRY_NUM];
+	struct virtq_avail avail;
+	struct virtq_used used __attribute__((aligned(PAGE_SIZE)));
+	int queue_index;
+	volatile uint16_t *used_index;
+	uint16_t last_used_index;
+} __attribute__((packed);
 
+struct virtio_blk_req {
+	uint32_t type;
+	uint32_t reserved;
+	uint64_t sector;
+	uint8_t data[512];
+	uint8_t status;
+} __attribute__((packed));
 
 
 #define PANIC(fmt, ...)                                                        \
